@@ -59,15 +59,15 @@ InsightVault is a secure, enterprise‑grade FinTech platform designed to proces
 
 ## 🧪 Testing & CI/CD
 - **Pytest** → Unit & integration tests.
-- **Pylint** → Code quality enforcement.
-- **GitHub Actions** → Automated linting, testing, Docker builds, and deployments.
+- **Pylint** → Code quality enforcement.  (Optional)
+- **GitHub Actions** → Automated linting, testing, Docker builds, and deployments.  (Optional)
 
 ---
 
 ## 📊 Dashboards
 - **Power BI** → Transaction volumes, fraud detection rates, customer segmentation.
-- **Grafana** → System metrics (latency, throughput).
-- **ELK Stack** → Logs and fraud alerts.
+- **Grafana** → System metrics (latency, throughput). (Optional)
+- **ELK Stack** → Logs and fraud alerts. (Optional)
 
 ---
 
