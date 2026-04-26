@@ -16,9 +16,39 @@ class Account(models.Model):
     def save(self, *args, **kwargs):
         if not self.account_number:
             self.account_number = str(uuid.uuid4().int)[:12]
-        super().save(*args, **kwargs)
     
     def __str__(self):
         return f"{self.user.username} - {self.account_number}"
 
+
+class Transaction(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="transactions")
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    transaction_type = models.CharField(
+        max_length=10,
+        choices=[("credit", "Credit"), ("debit", "Debit")]
+    )
+    description = models.TextField(null=True, blank=True)
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.transaction_type == "credit":
+            self.account.balance += self.amount
+        elif self.transaction_type == "debit":
+            self.account.balance -= self.amount
+        self.account.save()
+    
+    def __str__(self):
+        return f"{self.transaction_type} {self.amount} on {self.account.account_number}"
+    
+
+class FraudFlag(models.Model):
+    transaction = models.OneToOneField(Transaction, on_delete=models.CASCADE, related_name="fraud_flag")
+    reason = models.TextField()
+    flagged_at = models.DateTimeField(auto_now_add=True)
+    resolved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"FraudFlag for Tx {self.transaction.id}"
 
