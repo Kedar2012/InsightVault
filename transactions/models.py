@@ -44,14 +44,3 @@ class Transaction(models.Model):
     
     def __str__(self):
         return f"{self.transaction_type} {self.amount} on {self.account.account_number}"
-    
-
-class FraudFlag(models.Model):
-    transaction = models.OneToOneField(Transaction, on_delete=models.CASCADE, related_name="fraud_flag")
-    reason = models.TextField()
-    flagged_at = models.DateTimeField(auto_now_add=True)
-    resolved = models.BooleanField(default=False)
-
-    def __str__(self):
-        return f"FraudFlag for Tx {self.transaction.id}"
-

@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from .models import Account, Transaction, FraudFlag
-from .serializers import AccountSerializer, TransactionSerializer, FraudFlagSerializer
+from .models import Account, Transaction
+from .serializers import AccountSerializer, TransactionSerializer
 from rest_framework.exceptions import PermissionDenied
 from rest_framework import viewsets
 from .permissions import IsEndUser, IsSupportOrAnalyst
@@ -32,17 +32,3 @@ class TransactionViewSet(viewsets.ModelViewSet):
         if account.user != self.request.user:
             raise PermissionDenied("You cannot create transactions for another user's account.")
         serializer.save()
-
-class FraudFlagViewSet(viewsets.ModelViewSet):
-    serializer_class = FraudFlagSerializer
-    permission_classes = [IsSupportOrAnalyst]
-    
-    def get_queryset(self):
-        return FraudFlag.objects.all()
-
-    def update(self, request, *args, **kwargs):
-        return super().update(request, *args, **kwargs)
-
-    def destroy(self, request, *args, **kwargs):
-        return super().destroy(request, *args, **kwargs)
-
