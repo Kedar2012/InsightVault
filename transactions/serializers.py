@@ -4,7 +4,8 @@ from .models import Account, FraudFlag, Transaction
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        fields = ['user']
+        fields = ['id', 'account_number', 'balance', 'created_at']
+        read_only_fields = ['id', 'account_number', 'balance', 'created_at']
 
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:

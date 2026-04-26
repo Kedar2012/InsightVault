@@ -7,18 +7,25 @@ from .permissions import IsEndUser, IsSupportOrAnalyst
 
 
 class AccountViewSet(viewsets.ModelViewSet):
-    queryset = Account.objects.all()
     serializer_class = AccountSerializer
-    permission_classes = [IsEndUser]   # only end users
+    permission_classes = [IsEndUser]
+    
+    def get_queryset(self):
+        user = self.request.user
+        return Account.objects.filter(user=user)        
 
     def perform_create(self, serializer):
+        if Account.objects.filter(user=self.request.user).exists():
+            raise PermissionDenied("You already have an account.")
         serializer.save(user=self.request.user)
 
-
 class TransactionViewSet(viewsets.ModelViewSet):
-    queryset = Transaction.objects.all()
     serializer_class = TransactionSerializer
-    permission_classes = [IsEndUser]   # only end users
+    permission_classes = [IsEndUser]
+    
+    def get_queryset(self):
+        user = self.request.user
+        return Transaction.objects.filter(account__user=user)
 
     def perform_create(self, serializer):
         account = serializer.validated_data['account']
@@ -26,13 +33,16 @@ class TransactionViewSet(viewsets.ModelViewSet):
             raise PermissionDenied("You cannot create transactions for another user's account.")
         serializer.save()
 
-
 class FraudFlagViewSet(viewsets.ModelViewSet):
-    queryset = FraudFlag.objects.all()
     serializer_class = FraudFlagSerializer
-    permission_classes = [IsSupportOrAnalyst]   # only support/analyst
+    permission_classes = [IsSupportOrAnalyst]
+    
+    def get_queryset(self):
+        return FraudFlag.objects.all()
 
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
 
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
 

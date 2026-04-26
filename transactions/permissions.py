@@ -4,10 +4,9 @@ class IsEndUser(BasePermission):
     def has_permission(self, request, view):
         return (
             request.user.is_authenticated
-            and not request.user.is_staff
-            and getattr(request.user, "role", None) is None
+            and not request.user.is_staff   # exclude admins
+            and getattr(request.user, "role", None) == "end_user"
         )
-
 class IsSupportOrAnalyst(BasePermission):
     def has_permission(self, request, view):
         return (
