@@ -1,0 +1,28 @@
+{% extends 'index.html' %}
+
+{% block content %}
+<div class="form-wrapper">
+    <div class="container">
+        <div class="title">
+            <p>Login</p>
+        </div>
+        <form method="post">
+            <div class="user_details">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="username">Username</label>
+                    <input type="text" name="username" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password">Password</label>
+                    <input type="password" name="password" class="form-control" required>
+                </div>
+            </div>
+            <div class="reg_btn_register">
+                <input type="submit" value="Login">
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock content %}
