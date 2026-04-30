@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'fraudlog',
     'accounts.apps.AccountsConfig',
     'rest_framework',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
