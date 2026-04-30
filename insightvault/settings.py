@@ -84,6 +84,14 @@ DATABASES = {
     }
 }
 
+MONGO_DB = {
+    "NAME": os.getenv("MDB_NAME"),
+    "HOST": os.getenv("MDB_HOST"),
+    "PORT": int(os.getenv("MDB_PORT", 27017)),
+    "USER": os.getenv("MDB_USER"),
+    "PASSWORD": os.getenv("MDB_PASSWORD"),
+}
+
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators

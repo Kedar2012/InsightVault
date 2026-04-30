@@ -1,15 +1,13 @@
-from django.core.cache import cache
-from .models import FraudEventLog
+from fraudlog.mongo_client import get_mongo_collection
+from datetime import datetime
 
-def record_failed_login(user):
-    key = f"failed_login:{user.id}"
-    count = cache.get(key, 0) + 1
-    cache.set(key, count, timeout=3600)  # expire in 1 hour
-
-    if count >= 3:
-        FraudEventLog.objects.create(
-            user=user,
-            event_type="failed_login_threshold",
-            details={"attempts": count}
-        )
-    return count
+def record_failed_login(user_id, ip_address, device_info):
+    collection = get_mongo_collection()
+    event = {
+        "event_type": "failed_login",
+        "user_id": user_id,
+        "ip_address": ip_address,
+        "device_info": device_info,
+        "timestamp": datetime.utcnow(),
+    }
+    collection.insert_one(event)

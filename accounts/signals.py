@@ -1,20 +1,16 @@
 from django.contrib.auth.signals import user_login_failed
 from django.dispatch import receiver
-from django.contrib.auth import get_user_model
 from fraudlog.utils import record_failed_login
 
-User = get_user_model()
+count = 0
 
 @receiver(user_login_failed)
-def handle_user_login_failed(sender, credentials, request, **kwargs):
-    username = credentials.get("username")
-    if not username:
-        return
+def log_failed_login(sender, credentials, request, **kwargs):
+    global count
+    count += 1
+    user_id = credentials.get("username")
+    ip_address = request.META.get("REMOTE_ADDR")
+    device_info = request.META.get("HTTP_USER_AGENT")
 
-    try:
-        user = User.objects.get(username=username)
-    except User.DoesNotExist:
-        user = None
-
-    if user:
-        record_failed_login(user)
+    if count >= 4:
+        record_failed_login(user_id, ip_address, device_info)

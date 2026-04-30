@@ -1,5 +1,5 @@
-from .models import FraudFlag, FraudEventLog
-from .serializers import FraudFlagSerializer, FraudEventLogSerializer
+from .models import FraudFlag
+from .serializers import FraudFlagSerializer
 from rest_framework import viewsets
 from .permissions import IsSupportOrAnalyst
 
@@ -17,7 +17,7 @@ class FraudFlagViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
 
-class FraudEventLogViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = FraudEventLog.objects.all().order_by('-created_at')
-    serializer_class = FraudEventLogSerializer
+# class FraudEventLogViewSet(viewsets.ReadOnlyModelViewSet):
+#     queryset = FraudEventLog.objects.all().order_by('-created_at')
+#     serializer_class = FraudEventLogSerializer
 
