@@ -8,10 +8,8 @@ It integrates SQL and NoSQL databases, scalable services, advanced analytics, an
 - Provide a secure transaction system with role‑based dashboards.
 - Detect and flag fraudulent transactions using statistical and distributed analytics.
 - Deliver real‑time performance with caching and anomaly detection.
-- Offer visual insights through Power BI dashboards.
-- Scale seamlessly with Docker + Kubernetes.
+- Scale seamlessly with Docker
 - Ensure code quality with pytest in CI/CD pipelines (Pylint optional).
-- Enhance user experience with a chatbot assistant for onboarding and FAQs.
 
 # 🏗️ Tech Stack
 - Frontend/Admin: Django (role‑based dashboards, admin, authentication)
@@ -21,26 +19,22 @@ It integrates SQL and NoSQL databases, scalable services, advanced analytics, an
 - MongoDB → NoSQL, logs, fraud alerts
 - Redis → NoSQL, caching, real‑time flags
 - Analytics: Pandas, Numpy, Spark
-- Business Intelligence: Power BI
 - Testing & Quality: Pytest (Pylint optional)
-- Infrastructure: Docker, Kubernetes, GitHub/DockerHub
-- Cloud: AWS (primary deployment), GCP optional exploration
-- Monitoring: Prometheus (Grafana optional, ELK Stack optional)
+- Infrastructure: Docker, GitHub/DockerHub
+- Cloud: AWS (primary deployment)
 
 # 🔄 Architecture Flow
 - User Layer → Customers, Admins, Chatbot assistant
 - Application Layer → Django dashboards, Django REST Framework APIs, Fraud Detection Service (Celery workers)
 - Data Layer → Postgres (transactions), Redis (real‑time cache), MongoDB (logs/alerts)
 - Analytics Layer → Spark, Pandas/Numpy, Power BI dashboards
-- Infrastructure Layer → Docker, Kubernetes, AWS (GCP optional)
-- Monitoring Layer → CI/CD pipelines, Prometheus (Grafana optional, ELK optional)
-
+- Infrastructure Layer → Docker, Kubernetes, AWS
+  
 # 🚀 Features
 - Transaction Management → Secure creation, validation, and storage of financial transactions
 - Fraud Detection Engine → Real‑time anomaly detection powered by Spark + Redis + Celery
 - Multi‑Database Integration → SQL + NoSQL hybrid for structured and unstructured data
 - Analytics Dashboards → Power BI visualizations for fraud rates, transaction volumes, and risk profiles
-- Chatbot Assistant → Guides new users, answers FAQs, and improves onboarding
 - Scalable Deployment → Dockerized services orchestrated with Kubernetes, hosted on AWS (GCP optional)
 - Observability → End‑to‑end monitoring and logging with Prometheus, Grafana optional, ELK optional
 
@@ -64,11 +58,6 @@ insightvault/
 - Pytest → Unit & integration tests
 - Pylint (optional) → Code quality enforcement
 - GitHub Actions → Automated linting, testing, Docker builds, and deployments
-
-# 📊 Dashboards
-- Power BI → Transaction volumes, fraud detection rates, customer segmentation
-- Grafana (optional) → System metrics (latency, throughput)
-- ELK Stack (optional) → Logs and fraud alerts
 
 # 🌐 Deployment
 - Local Dev → Docker Compose for all services
