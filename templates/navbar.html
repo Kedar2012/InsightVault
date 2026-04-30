@@ -7,10 +7,19 @@
         <li class="nav-item">
           <a class="nav-link" href="#">About</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Services</a>
-        </li>
         {% if user.is_authenticated %}
+
+          {% if not user.account %}
+            <li class="nav-item"> <a class="nav-link" href="{% url 'account_create' %}">Create Account</a></li>
+          {% else %}
+            <li class="nav-item"> <a class="nav-link" href="{% url 'account_detail' %}">Account Details</a></li>
+            <li class="nav-item"> <a class="nav-link" href="{% url 'transaction_list' %}">Statement</a></li>
+            <li class="nav-item"> <a class="nav-link" href="{% url 'transaction_create' %}">Debit/Credit</a></li>
+          {% endif %}
+
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'logout' %}">API</a>
+          </li>
           <li class="nav-item">
             <a class="nav-link" href="{% url 'logout' %}">LogOut</a>
           </li>

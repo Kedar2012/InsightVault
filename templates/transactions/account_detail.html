@@ -1,0 +1,17 @@
+{% extends "index.html" %}
+{% block content %}
+
+<div class="tran-wrapper">
+  <div class="container mt-4">
+    <h2>My Account</h2>
+    <p><strong>Account Number:</strong> {{ account.account_number }}</p>
+    <p><strong>Balance:</strong> ₹{{ account.balance }}</p>
+    <p><strong>Created At:</strong> {{ account.created_at }}</p>
+
+    <a href="{% url 'transaction_list' %}" class="btn btn-primary mt-3">View Transactions</a>
+    <a href="{% url 'transaction_create' %}" class="btn btn-success mt-3">New Transaction</a>
+  </div>
+</div>
+
+
+{% endblock %}

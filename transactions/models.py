@@ -9,7 +9,7 @@ from django.conf import settings
 class Account(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     account_number = models.CharField(max_length=20, unique=True, editable=False)
-    balance = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, editable=False)
+    balance = models.DecimalField(max_digits=12, decimal_places=2, default=100.00, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

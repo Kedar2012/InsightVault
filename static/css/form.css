@@ -82,7 +82,16 @@
     min-height: calc(100vh - 160px); /* Adjust for navbar + footer */
     background-color: #f0f2f5;
     padding: 40px 20px;
-    padding-top: 80px;
+    padding-top: 130px;
+}
+
+.tran-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f0f2f5;
+    padding: 40px 20px;
+    padding-top: 130px;
 }
 
 .carousel-item {
