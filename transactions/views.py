@@ -9,6 +9,8 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from .models import Account, Transaction
 from .forms import TransactionForm
+from fraudlog.models import FraudFlag
+from django.contrib import messages
 
 class AccountViewSet(viewsets.ModelViewSet):
     serializer_class = AccountSerializer
@@ -60,13 +62,42 @@ def transaction_list(request):
 
 @login_required
 def transaction_create(request):
-    account = Account.objects.get(user=request.user)
+    account = request.user.account
+    bal = account.balance
     if request.method == "POST":
         form = TransactionForm(request.POST)
         if form.is_valid():
             transaction = form.save(commit=False)
-            transaction.account = account  # ✅ force ownership
+            transaction.account = account
             transaction.save()
+
+            if transaction.amount > 100000:
+                FraudFlag.objects.create(
+                    transaction=transaction,
+                    reason="High value transaction blocked",
+                    severity="high"
+                )
+                transaction.status = "fraud_blocked"
+                transaction.save(update_fields=["status"])
+                account.balance = bal
+                account.save()
+                messages.error(request, "Transaction blocked due to fraud suspicion.")
+                return redirect("transaction_list")
+
+            if account.balance < 0:
+                FraudFlag.objects.create(
+                    transaction=transaction,
+                    reason="Overdraft attempt blocked",
+                    severity="high"
+                )
+                transaction.status = "fraud_blocked"
+                transaction.save(update_fields=["status"])
+                account.balance = bal
+                account.save()
+                messages.error(request, "Transaction blocked due to insufficient balance.")
+                return redirect("transaction_list")
+
+            messages.success(request, "Transaction completed successfully.")
             return redirect("transaction_list")
     else:
         form = TransactionForm()

@@ -6,6 +6,17 @@
         <div class="title">
             <p>Login</p>
         </div>
+
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
         <form method="post">
             <div class="user_details">
                 {% csrf_token %}
@@ -24,5 +35,4 @@
         </form>
     </div>
 </div>
-
 {% endblock content %}

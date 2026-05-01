@@ -1,5 +1,7 @@
 from pymongo import MongoClient
 from django.conf import settings
+from datetime import datetime
+
 
 def get_mongo_collection():
     client = MongoClient(
@@ -7,13 +9,19 @@ def get_mongo_collection():
         port=settings.MONGO_DB["PORT"],
         username=settings.MONGO_DB["USER"],
         password=settings.MONGO_DB["PASSWORD"],
-        authSource="admin",   # ✅ authenticate against admin
+        authSource="admin",
     )
-    db = client[settings.MONGO_DB["NAME"]]   # target DB
-    return db["fraud_event_logs"]            # collection name
+    db = client[settings.MONGO_DB["NAME"]]
+    return db["fraud_event_logs"]
 
-
-def log_event(data: dict):
+def log_event(event_type, user_id, ip_address=None, device_info=None, extra=None):
     collection = get_mongo_collection()
-    result = collection.insert_one(data)
-    return result.inserted_id
+    event = {
+        "event_type": event_type,
+        "user_id": user_id,
+        "ip_address": ip_address,
+        "device_info": device_info,
+        "extra": extra,
+        "timestamp": datetime.utcnow(),
+    }
+    return collection.insert_one(event).inserted_id

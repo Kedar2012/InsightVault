@@ -1,4 +1,6 @@
 from rest_framework import viewsets, generics, permissions
+
+from fraudlog.utils import increment_failed_login, reset_failed_login
 from .models import CustomUser
 from .serializers import UserSerializer, RegisterSerializer
 from .permissions import IsAdmin
@@ -8,6 +10,9 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.utils import timezone
+from datetime import timedelta
+
 # Create your views here.
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -26,9 +31,9 @@ def register(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            user.role = "end_user"  # default role
+            user.role = "end_user"
             user.save()
-            login(request, user)  # auto login after registration
+            login(request, user)
             return redirect("home")
     else:
         form = CustomUserCreationForm()
@@ -41,14 +46,36 @@ def login_view(request):
         password = request.POST.get("password")
 
         user = authenticate(request, username=username, password=password)
+
         if user is not None:
+            if user.is_blocked():
+                messages.error(request, "Your account is temporarily locked due to multiple failed attempts.")
+                return render(request, "accounts/login.html")
+
             login(request, user)
+            reset_failed_login(user.id)
             messages.success(request, f"Welcome back, {user.username}!")
-            return redirect("home")  # or dashboard
+            return redirect("home")
         else:
-            messages.error(request, "Invalid username or password.")
-            return render(request, "accounts/login.html")
+            count = increment_failed_login(username)
+            ip_address = request.META.get("REMOTE_ADDR")
+            device_info = request.META.get("HTTP_USER_AGENT")
+
+            if count >= 3:
+                try:
+                    user = CustomUser.objects.get(username=username)
+                    user.blocked_until = timezone.now() + timedelta(minutes=10)
+                    user.save()
+                except CustomUser.DoesNotExist:
+                    pass
+
+                from fraudlog.mongo_client import log_event
+                log_event("failed_login_threshold", username, ip_address, device_info, extra={"attempts": count})
+                messages.error(request, "Account temporarily locked due to multiple failed attempts.")
+            else:
+                messages.error(request, "Invalid username or password.")
     return render(request, "accounts/login.html")
+
 
 @login_required
 def logout_view(request):

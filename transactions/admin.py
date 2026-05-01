@@ -9,4 +9,5 @@ class AccountAdmin(admin.ModelAdmin):
 
 @admin.register(Transaction)
 class TransactionAdmin(admin.ModelAdmin):
-    list_display = ['account','amount','transaction_type']
+    list_display = ['account','amount','transaction_type','status']
+

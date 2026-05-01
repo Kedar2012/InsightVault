@@ -7,13 +7,23 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class FraudFlag(models.Model):
-    transaction = models.OneToOneField(Transaction, on_delete=models.CASCADE, related_name="fraud_flag")
+    transaction = models.OneToOneField(
+        Transaction,
+        on_delete=models.CASCADE,
+        related_name="fraud_flag"
+    )
     reason = models.TextField()
+    severity = models.CharField(
+        max_length=20,
+        choices=[("low", "Low"), ("medium", "Medium"), ("high", "High")],
+        default="low"
+    )
     flagged_at = models.DateTimeField(auto_now_add=True)
     resolved = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"FraudFlag for Tx {self.transaction.id}"
+        return f"FraudFlag for Tx {self.transaction.id} ({self.reason})"
+
 
 # class FraudEventLog(models.Model):
 #     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)

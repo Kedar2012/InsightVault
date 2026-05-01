@@ -5,7 +5,6 @@ from django.conf import settings
 
 # Create your models here.
 
-
 class Account(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     account_number = models.CharField(max_length=20, unique=True, editable=False)
@@ -30,10 +29,19 @@ class Transaction(models.Model):
         choices=[("credit", "Credit"), ("debit", "Debit")]
     )
     description = models.TextField(null=True, blank=True)
+    STATUS_CHOICES = [
+        ("completed", "Completed"),
+        ("fraud_blocked", "Fraud Blocked"),
+    ]
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="completed"
+    )
     
     def save(self, *args, **kwargs):
-        if self.transaction_type == "debit" and self.account.balance < self.amount:
-            raise ValidationError("Insufficient balance for this transaction.")
+        # if self.transaction_type == "debit" and self.account.balance < self.amount:
+        #     raise ValidationError("Insufficient balance for this transaction.")
         
         super().save(*args, **kwargs)
         if self.transaction_type == "credit":
@@ -43,4 +51,4 @@ class Transaction(models.Model):
         self.account.save()
     
     def __str__(self):
-        return f"{self.transaction_type} {self.amount} on {self.account.account_number}"
+        return f"{self.account} - {self.amount} ({self.status})"

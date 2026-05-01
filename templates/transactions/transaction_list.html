@@ -11,6 +11,7 @@
           <th>Amount</th>
           <th>Type</th>
           <th>Description</th>
+          <th>Status</th>
           <th>Timestamp</th>
         </tr>
       </thead>
@@ -20,6 +21,7 @@
           <td>₹{{ tx.amount }}</td>
           <td>{{ tx.transaction_type|title }}</td>
           <td>{{ tx.description }}</td>
+          <td>{{ tx.status }}</td>
           <td>{{ tx.timestamp }}</td>
         </tr>
         {% empty %}

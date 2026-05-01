@@ -1,13 +1,21 @@
-from fraudlog.mongo_client import get_mongo_collection
-from datetime import datetime
+import redis
+from django.conf import settings
 
-def record_failed_login(user_id, ip_address, device_info):
-    collection = get_mongo_collection()
-    event = {
-        "event_type": "failed_login",
-        "user_id": user_id,
-        "ip_address": ip_address,
-        "device_info": device_info,
-        "timestamp": datetime.utcnow(),
-    }
-    collection.insert_one(event)
+# Redis client for counters
+redis_client = redis.StrictRedis(
+    host=settings.REDIS_HOST,
+    port=settings.REDIS_PORT,
+    db=settings.REDIS_DB,
+    decode_responses=True
+)
+
+def increment_failed_login(user_id):
+    key = f"failed_login:{user_id}"
+    count = redis_client.incr(key)
+    redis_client.expire(key, 3600)  # expire after 1 hour
+    return count
+
+def reset_failed_login(user_id):
+    key = f"failed_login:{user_id}"
+    redis_client.delete(key)
+    
