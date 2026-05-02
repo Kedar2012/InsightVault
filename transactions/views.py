@@ -1,4 +1,7 @@
 from django.shortcuts import render
+
+from fraudlog.mongo_client import log_event
+from transactions.utils import check_transaction_velocity
 from .models import Account, Transaction
 from .serializers import AccountSerializer, TransactionSerializer
 from rest_framework.exceptions import PermissionDenied
@@ -70,7 +73,28 @@ def transaction_create(request):
             transaction = form.save(commit=False)
             transaction.account = account
             transaction.save()
+            
+            if transaction.transaction_type == "debit":
+                if check_transaction_velocity(account.id):
+                    FraudFlag.objects.create(
+                        transaction=transaction,
+                        reason="Velocity check failed (too many debits in 1 min)",
+                        severity="high"
+                    )
+                    transaction.status = "fraud_blocked"
+                    transaction.save(update_fields=["status"])
+                    account.balance = bal
+                    account.save()
 
+                    log_event(
+                        event_type="velocity_check",
+                        user_id=request.user.id,
+                        extra={"reason": "Too many debits in 1 minute"}
+                    )
+
+                    messages.error(request, "Transaction blocked due to velocity fraud rule.")
+                    return redirect("transaction_list")
+            
             if transaction.amount > 100000:
                 FraudFlag.objects.create(
                     transaction=transaction,
