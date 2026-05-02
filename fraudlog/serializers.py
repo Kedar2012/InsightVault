@@ -13,3 +13,14 @@ class FraudFlagSerializer(serializers.ModelSerializer):
 #         fields = ['user', 'event_type', 'details', 'created_at']
 #         read_only_fields = ('created_at',)
 
+
+class FraudEventLogSerializer(serializers.Serializer):
+    event_type = serializers.CharField()
+    user_id = serializers.CharField()
+    ip_address = serializers.CharField(required=False)
+    device_info = serializers.CharField(required=False)
+    severity = serializers.CharField(required=False)
+    reason = serializers.CharField(required=False)
+    timestamp = serializers.DateTimeField()
+    extra = serializers.JSONField(required=False)
+

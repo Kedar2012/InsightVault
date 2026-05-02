@@ -25,3 +25,9 @@ def log_event(event_type, user_id, ip_address=None, device_info=None, extra=None
         "timestamp": datetime.utcnow(),
     }
     return collection.insert_one(event).inserted_id
+
+def get_events(query=None):
+    collection = get_mongo_collection()
+    if query is None:
+        query = {}
+    return list(collection.find(query))
