@@ -10,7 +10,8 @@ class AccountSerializer(serializers.ModelSerializer):
 class DebitTransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = DebitTransaction
-        fields = ['account', 'destination_account_number', 'amount', 'description']
+        fields = ["id", "account", "destination_account_number", "amount", "description", "status", "timestamp"]
+        read_only_fields = ["status", "timestamp"]
 
 class CreditRequestSerializer(serializers.ModelSerializer):
     class Meta:

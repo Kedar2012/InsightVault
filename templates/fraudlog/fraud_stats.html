@@ -1,0 +1,11 @@
+{% extends "index.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Fraud Stats</h2>
+  <ul class="list-group">
+    <li class="list-group-item">Total Flags: {{ total_flags }}</li>
+    <li class="list-group-item">Resolved Flags: {{ resolved_flags }}</li>
+    <li class="list-group-item">Unresolved Flags: {{ unresolved_flags }}</li>
+  </ul>
+</div>
+{% endblock %}

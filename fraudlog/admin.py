@@ -5,7 +5,8 @@ from .models import FraudFlag
 
 @admin.register(FraudFlag)
 class FraudFlagAdmin(admin.ModelAdmin):
-    list_display = ("linked_object", "reason", "severity", "flagged_at", "resolved")
+    list_display = ("linked_object", "reason", "severity", "flagged_at", "resolved", "resolved_reason", "resolved_by")
+    list_filter = ("severity", "resolved")
 
     def linked_object(self, obj):
         if obj.transaction:

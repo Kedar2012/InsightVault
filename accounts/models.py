@@ -9,6 +9,7 @@ class CustomUser(AbstractUser):
         ("analyst", "Analyst"),
         ("support", "Support"),
         ("end_user", "End User"),
+        ("admin", "Admin"),
     ]
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="end_user")
     blocked_until = models.DateTimeField(null=True, blank=True)

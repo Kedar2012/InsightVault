@@ -29,6 +29,7 @@ class DebitTransaction(models.Model):
     STATUS_CHOICES = [
         ("completed", "Completed"),
         ("fraud_blocked", "Fraud Blocked"),
+        ("at_support", "At Support"),
     ]
     status = models.CharField(max_length=20,choices=STATUS_CHOICES,default="completed")
     
@@ -47,6 +48,8 @@ class CreditRequest(models.Model):
         ("pending", "Pending"),
         ("approved", "Approved"),
         ("rejected", "Rejected"),
+        ("fraud_blocked", "Fraud Blocked"),
+        ("at_support", "At Support")
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -64,6 +67,7 @@ class CreditTransaction(models.Model):
     STATUS_CHOICES = [
         ("completed", "Completed"),
         ("fraud_blocked", "Fraud Blocked"),
+        ("at_support", "At Support"),
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="completed")
     

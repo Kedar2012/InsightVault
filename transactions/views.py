@@ -10,7 +10,7 @@ from .permissions import IsEndUser, IsSupportOrAnalyst
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
-from .forms import DebitTransactionForm, CreditRequestForm
+from .forms import DebitTransactionForm, CreditRequestForm, SupportCreditExecutionForm, SupportDebitExecutionForm
 from fraudlog.models import FraudFlag
 from django.contrib import messages
 from functools import wraps
@@ -305,3 +305,60 @@ class CreditTransactionViewSet(viewsets.ModelViewSet):
     serializer_class = CreditTransactionSerializer
     permission_classes = [IsSupportOrAnalyst]
 
+
+@login_required
+@role_required(["support"])
+def support_execute_debit(request, pk):
+    transaction = get_object_or_404(DebitTransaction, pk=pk, status="at_support")
+    if request.method == "POST":
+        form = SupportDebitExecutionForm(request.POST, instance=transaction)
+        if form.is_valid():
+            transaction = form.save(commit=False)
+            account = transaction.account
+            dest_account = Account.objects.get(account_number=transaction.destination_account_number)
+
+            account.balance -= transaction.amount
+            dest_account.balance += transaction.amount
+            account.save()
+            dest_account.save()
+
+            transaction.status = "completed"
+            transaction.save()
+
+            messages.success(request, "Debit transaction executed successfully.")
+            return redirect("credit_request_list")
+    else:
+        form = SupportDebitExecutionForm(instance=transaction)
+
+    return render(request, "transactions/support_execute_debit.html", {"form": form, "transaction": transaction})
+
+
+@login_required
+@role_required(["support"])
+def support_execute_credit(request, pk):
+    credit_request = get_object_or_404(CreditRequest, pk=pk, status="at_support")
+    if request.method == "POST":
+        form = SupportCreditExecutionForm(request.POST, instance=credit_request)
+        if form.is_valid():
+            credit_request = form.save(commit=False)
+            account = credit_request.account
+            
+            account.balance += credit_request.amount
+            account.save()
+
+            CreditTransaction.objects.create(
+                account=account,
+                amount=credit_request.amount,
+                deposit_reference=credit_request.deposit_reference,
+                status="completed"
+            )
+
+            credit_request.status = "approved"
+            credit_request.save()
+
+            messages.success(request, "Credit request executed successfully.")
+            return redirect("credit_request_list")
+    else:
+        form = SupportCreditExecutionForm(instance=credit_request)
+
+    return render(request, "transactions/support_execute_credit.html", {"form": form, "credit_request": credit_request})

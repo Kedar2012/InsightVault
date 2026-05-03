@@ -1,0 +1,17 @@
+{% extends "index.html" %}
+{% block content %}
+
+<h2>Execute Credit Request</h2>
+<p>Account: {{ credit_request.account.account_number }}</p>
+<p>Amount: {{ credit_request.amount }}</p>
+<p>Deposit Reference: {{ credit_request.deposit_reference }}</p>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">Execute Credit</button>
+</form>
+
+
+
+{% endblock %}

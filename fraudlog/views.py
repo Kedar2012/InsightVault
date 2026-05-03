@@ -1,12 +1,28 @@
 from .models import FraudFlag
 from .serializers import FraudFlagSerializer, FraudEventLogSerializer
 from rest_framework import viewsets, filters
-from .permissions import IsSupportOrAnalyst
+from .permissions import IsSupportOrAnalyst, IsAnalyst
 from .mongo_client import get_events
 from rest_framework.pagination import PageNumberPagination
 from datetime import datetime
 from rest_framework.response import Response
 from django.db.models import Count
+from functools import wraps
+from rest_framework.exceptions import PermissionDenied
+from .forms import FraudResolveForm
+from django.shortcuts import get_object_or_404, render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+
+def role_required(allowed_roles):
+    def decorator(view_func):
+        @wraps(view_func)
+        def _wrapped_view(request, *args, **kwargs):
+            if getattr(request.user, "role", None) not in allowed_roles:
+                raise PermissionDenied
+            return view_func(request, *args, **kwargs)
+        return _wrapped_view
+    return decorator
 
 class FraudFlagPagination(PageNumberPagination):
     page_size = 20
@@ -15,7 +31,6 @@ class FraudFlagPagination(PageNumberPagination):
 
 class FraudFlagViewSet(viewsets.ModelViewSet):
     serializer_class = FraudFlagSerializer
-    permission_classes = [IsSupportOrAnalyst]
     pagination_class = FraudFlagPagination
     filter_backends = [filters.OrderingFilter, filters.SearchFilter]
     ordering_fields = ["flagged_at", "severity", "resolved"]
@@ -41,8 +56,27 @@ class FraudFlagViewSet(viewsets.ModelViewSet):
             
         return qs.order_by("-flagged_at")
 
+    def get_permissions(self):
+        if self.action in ["update", "partial_update"]:
+            return [IsAnalyst()]
+        elif self.action == "destroy":
+            from rest_framework.permissions import IsAdminUser
+            return [IsAdminUser()]
+        return [IsSupportOrAnalyst()]
+
     def update(self, request, *args, **kwargs):
-        return super().update(request, *args, **kwargs)
+        instance = self.get_object()
+        response = super().update(request, *args, **kwargs)
+
+        if instance.resolved:
+            if instance.transaction:
+                instance.transaction.status = "at_support"
+                instance.transaction.save()
+            elif instance.credit_request:
+                instance.credit_request.status = "at_support"
+                instance.credit_request.save()
+
+        return response
 
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
@@ -114,4 +148,52 @@ class FraudStatsViewSet(viewsets.ViewSet):
             "fraud_flags": list(flag_stats),
             "fraud_events": event_stats
         })
+
+
+
+@login_required
+def fraud_flags_ui(request):
+    flags = FraudFlag.objects.all().order_by("-flagged_at")
+    return render(request, "fraudlog/fraud_flags.html", {"flags": flags})
+
+@login_required
+def fraud_stats_ui(request):
+    total_flags = FraudFlag.objects.count()
+    resolved_flags = FraudFlag.objects.filter(resolved=True).count()
+    unresolved_flags = total_flags - resolved_flags
+
+    return render(request, "fraudlog/fraud_stats.html", {
+        "total_flags": total_flags,
+        "resolved_flags": resolved_flags,
+        "unresolved_flags": unresolved_flags,
+    })
+    
+@login_required
+@role_required(["analyst"])
+def resolve_fraud_flag(request, pk):
+    flag = get_object_or_404(FraudFlag, pk=pk)
+
+    if request.method == "POST":
+        form = FraudResolveForm(request.POST, instance=flag)
+        if form.is_valid():
+            flag = form.save(commit=False)
+            flag.resolved = True
+            flag.resolved_by = request.user
+            flag.save()
+
+            # Move linked object to support
+            if flag.transaction:
+                flag.transaction.status = "at_support"
+                flag.transaction.save()
+            elif flag.credit_request:
+                flag.credit_request.status = "at_support"
+                flag.credit_request.save()
+
+            messages.success(request, "Fraud flag resolved and moved to support.")
+            return redirect("fraud_flags_ui")
+    else:
+        form = FraudResolveForm(instance=flag)
+
+    return render(request, "fraudlog/resolve_flag.html", {"form": form, "flag": flag})
+
 

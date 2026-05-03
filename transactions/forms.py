@@ -31,3 +31,29 @@ class CreditRequestForm(forms.ModelForm):
             raise forms.ValidationError("Deposit reference is required for credit requests.")
         return cleaned_data
 
+class SupportDebitExecutionForm(forms.ModelForm):
+    class Meta:
+        model = DebitTransaction
+        fields = ["destination_account_number", "amount", "description"]
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 2}),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if not cleaned_data.get("destination_account_number"):
+            raise forms.ValidationError("Destination account number is required.")
+        return cleaned_data
+
+
+class SupportCreditExecutionForm(forms.ModelForm):
+    class Meta:
+        model = CreditRequest
+        fields = ["amount", "deposit_reference"]
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if not cleaned_data.get("deposit_reference"):
+            raise forms.ValidationError("Deposit reference is required.")
+        return cleaned_data
+    

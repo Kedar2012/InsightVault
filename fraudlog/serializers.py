@@ -4,8 +4,18 @@ from .models import FraudFlag
 class FraudFlagSerializer(serializers.ModelSerializer):
     class Meta:
         model = FraudFlag
-        fields = ['transaction','reason','resolved']
-        read_only_fields = ('resolved', 'flagged_at')
+        fields = [
+            "id",
+            "transaction",
+            "credit_request",
+            "reason",
+            "severity",
+            "flagged_at",
+            "resolved",
+            "resolved_reason",
+            "resolved_by",
+        ]
+        read_only_fields = ("flagged_at", "resolved_by")
 
 # class FraudEventLogSerializer(serializers.ModelSerializer):
 #     class Meta:

@@ -1,0 +1,17 @@
+{% extends "index.html" %}
+{% block content %}
+
+<h2>Execute Debit Transaction</h2>
+<p>Source Account: {{ transaction.account.account_number }}</p>
+<p>Destination Account: {{ transaction.destination_account_number }}</p>
+<p>Amount: {{ transaction.amount }}</p>
+<p>Description: {{ transaction.description }}</p>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">Execute Transaction</button>
+</form>
+
+
+{% endblock %}

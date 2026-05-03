@@ -24,8 +24,15 @@ class FraudFlag(models.Model):
         default="low"
     )
     flagged_at = models.DateTimeField(auto_now_add=True)
+    
     resolved = models.BooleanField(default=False)
-
+    resolved_reason = models.TextField(null=True, blank=True)
+    resolved_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name="resolved_flags"
+    )
+    
     def __str__(self):
         if self.transaction:
             return f"FraudFlag for Tx {self.transaction.id} ({self.reason})"

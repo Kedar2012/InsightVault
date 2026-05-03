@@ -11,31 +11,38 @@
         {% if user.is_authenticated %}
           {% if user.role == "end_user" %}
             {% if not user.account %}
-              <li class="nav-item"> <a class="nav-link" href="{% url 'account_create' %}">Create Account</a></li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'account_create' %}">Create Account</a>
+              </li>
             {% else %}
-              <li class="nav-item"> <a class="nav-link" href="{% url 'account_detail' %}">Account Details</a></li>
-              <li class="nav-item"> <a class="nav-link" href="{% url 'transaction_list' %}">Statement</a></li>
-              <li class="nav-item"> <a class="nav-link" href="{% url 'my_credit_request' %}">Credit Requests</a></li>
-
-              <li class="nav-item"> <a class="nav-link" href="{% url 'debit_create' %}">Transfer Money</a></li>
-              <li class="nav-item"> <a class="nav-link" href="{% url 'credit_request_create' %}">Deposit Money</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'account_detail' %}">Account Details</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'transaction_list' %}">Statement</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'my_credit_request' %}">My Credit Requests</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'debit_create' %}">Transfer Money</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'credit_request_create' %}">Deposit Money</a></li>
             {% endif %}
-          {% else %}
-              <li class="nav-item"> <a class="nav-link" href="{% url 'credit_request_list' %}">Credit Requests</a></li>
-              <li class="nav-item"> <a class="nav-link" href="{% url 'schema-swagger-ui' %}"target="_blank">API</a></li>
+          
+          {% elif user.role == "analyst" %}
+              <li class="nav-item"><a class="nav-link" href="{% url 'credit_request_list' %}">Credit Requests</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'fraud_flags_ui' %}">Fraud Flags</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'fraud_stats_ui' %}">Fraud Stats</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'schema-swagger-ui' %}" target="_blank">API</a></li>
+          
+          {% elif user.role == "support" %}
+              <li class="nav-item"><a class="nav-link" href="{% url 'credit_request_list' %}">Credit Requests</a></li>
+              {% comment %} <li class="nav-item"><a class="nav-link" href="{% url 'support_execute_debit' 1 %}">Execute Debit</a></li> {% endcomment %}
+              {% comment %} <li class="nav-item"><a class="nav-link" href="{% url 'support_execute_credit' 1 %}">Execute Credit</a></li> {% endcomment %}
+              <li class="nav-item"><a class="nav-link" href="{% url 'schema-swagger-ui' %}" target="_blank">API</a></li>
           {% endif %}
 
           <li class="nav-item">
             <a class="nav-link" href="{% url 'logout' %}">LogOut</a>
           </li>
         {% else %}
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'login' %}">Login</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'register' %}">Register</a>
-          </li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">Register</a></li>
         {% endif %}
+        
       </ul>
     </div>
   </div>
