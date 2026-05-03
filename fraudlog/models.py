@@ -1,5 +1,5 @@
 from django.db import models
-from transactions.models import DebitTransaction
+from transactions.models import CreditRequest, DebitTransaction
 from django.contrib.auth import get_user_model
 
 # Create your models here.
@@ -10,7 +10,12 @@ class FraudFlag(models.Model):
     transaction = models.OneToOneField(
         DebitTransaction,
         on_delete=models.CASCADE,
-        related_name="fraud_flag"
+        related_name="fraud_flag",
+        null=True, blank=True
+    )
+    credit_request = models.ForeignKey(
+        CreditRequest, on_delete=models.CASCADE,
+        null=True, blank=True
     )
     reason = models.TextField()
     severity = models.CharField(
@@ -22,7 +27,11 @@ class FraudFlag(models.Model):
     resolved = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"FraudFlag for Tx {self.transaction.id} ({self.reason})"
+        if self.transaction:
+            return f"FraudFlag for Tx {self.transaction.id} ({self.reason})"
+        elif self.credit_request:
+            return f"FraudFlag for CreditRequest {self.credit_request.id} ({self.reason})"
+        return f"FraudFlag ({self.reason})"
 
 
 # class FraudEventLog(models.Model):

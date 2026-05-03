@@ -15,9 +15,13 @@
             {% else %}
               <li class="nav-item"> <a class="nav-link" href="{% url 'account_detail' %}">Account Details</a></li>
               <li class="nav-item"> <a class="nav-link" href="{% url 'transaction_list' %}">Statement</a></li>
-              <li class="nav-item"> <a class="nav-link" href="{% url 'transaction_create' %}">Transfer Money</a></li>
+              <li class="nav-item"> <a class="nav-link" href="{% url 'my_credit_request' %}">Credit Requests</a></li>
+
+              <li class="nav-item"> <a class="nav-link" href="{% url 'debit_create' %}">Transfer Money</a></li>
+              <li class="nav-item"> <a class="nav-link" href="{% url 'credit_request_create' %}">Deposit Money</a></li>
             {% endif %}
           {% else %}
+              <li class="nav-item"> <a class="nav-link" href="{% url 'credit_request_list' %}">Credit Requests</a></li>
               <li class="nav-item"> <a class="nav-link" href="{% url 'schema-swagger-ui' %}"target="_blank">API</a></li>
           {% endif %}
 

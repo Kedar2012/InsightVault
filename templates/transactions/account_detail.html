@@ -9,7 +9,8 @@
     <p><strong>Created At:</strong> {{ account.created_at }}</p>
 
     <a href="{% url 'transaction_list' %}" class="btn btn-primary mt-3">View Transactions</a>
-    <a href="{% url 'transaction_create' %}" class="btn btn-success mt-3">New Transaction</a>
+    <a href="{% url 'debit_create' %}" class="btn btn-success mt-3">New Debit Transaction</a>
+    <a href="{% url 'credit_request_create' %}" class="btn btn-success mt-3">New Credit Transaction</a>
   </div>
 </div>
 

@@ -20,7 +20,7 @@ class Account(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.account_number}"
 
-class DebitTransaction(models.Model):
+class DebitTransaction(models.Model):    
     account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="debit_transactions")
     destination_account_number = models.CharField(max_length=20, null=True, blank=True)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
@@ -31,7 +31,46 @@ class DebitTransaction(models.Model):
         ("fraud_blocked", "Fraud Blocked"),
     ]
     status = models.CharField(max_length=20,choices=STATUS_CHOICES,default="completed")
+    
+    @property
+    def transaction_type(self):
+        return "Debit"
 
     def __str__(self):
         return f"{self.account} - {self.amount} ({self.status})"
 
+class CreditRequest(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="credit_requests")
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    deposit_reference = models.CharField(max_length=50)
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    fraud = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.account} - {self.amount} ({self.status})"
+    
+class CreditTransaction(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="credit_transactions")
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    deposit_reference = models.CharField(max_length=50)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    STATUS_CHOICES = [
+        ("completed", "Completed"),
+        ("fraud_blocked", "Fraud Blocked"),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="completed")
+    
+    @property
+    def transaction_type(self):
+        return "Credit"
+
+    def __str__(self):
+        return f"{self.account} - {self.amount} ({self.status})"
+    
