@@ -1,5 +1,5 @@
 from django.db import models
-from transactions.models import Transaction
+from transactions.models import DebitTransaction
 from django.contrib.auth import get_user_model
 
 # Create your models here.
@@ -8,7 +8,7 @@ User = get_user_model()
 
 class FraudFlag(models.Model):
     transaction = models.OneToOneField(
-        Transaction,
+        DebitTransaction,
         on_delete=models.CASCADE,
         related_name="fraud_flag"
     )

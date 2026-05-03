@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Account, Transaction
+from .models import Account, DebitTransaction
 
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
@@ -7,7 +7,8 @@ class AccountSerializer(serializers.ModelSerializer):
         fields = ['id', 'account_number', 'balance', 'created_at']
         read_only_fields = ['id', 'account_number', 'balance', 'created_at']
 
-class TransactionSerializer(serializers.ModelSerializer):
+class DebitTransactionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Transaction
-        fields = ['account','amount','transaction_type','description']
+        model = DebitTransaction
+        fields = ['account', 'destination_account_number', 'amount', 'description']
+

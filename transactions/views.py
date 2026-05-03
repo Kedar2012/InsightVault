@@ -2,16 +2,15 @@ from django.shortcuts import render
 
 from fraudlog.mongo_client import log_event
 from transactions.utils import check_transaction_velocity
-from .models import Account, Transaction
-from .serializers import AccountSerializer, TransactionSerializer
+from .models import Account, DebitTransaction
+from .serializers import AccountSerializer, DebitTransactionSerializer
 from rest_framework.exceptions import PermissionDenied
 from rest_framework import viewsets
 from .permissions import IsEndUser, IsSupportOrAnalyst
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
-from .models import Account, Transaction
-from .forms import TransactionForm
+from .forms import DebitTransactionForm
 from fraudlog.models import FraudFlag
 from django.contrib import messages
 
@@ -29,12 +28,12 @@ class AccountViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
 class TransactionViewSet(viewsets.ModelViewSet):
-    serializer_class = TransactionSerializer
+    serializer_class = DebitTransactionSerializer
     permission_classes = [IsEndUser]
     
     def get_queryset(self):
         user = self.request.user
-        return Transaction.objects.filter(account__user=user)
+        return DebitTransaction.objects.filter(account__user=user)
 
     def perform_create(self, serializer):
         account = serializer.validated_data['account']
@@ -60,40 +59,63 @@ def account_create(request):
 @login_required
 def transaction_list(request):
     account = Account.objects.get(user=request.user)
-    transactions = account.transactions.all()
-    return render(request, "transactions/transaction_list.html", {"transactions": transactions})
+    debitransactions = account.debit_transactions.all()
+    return render(request, "transactions/transaction_list.html", {"transactions": debitransactions})
+
 
 @login_required
 def transaction_create(request):
     account = request.user.account
     bal = account.balance
     if request.method == "POST":
-        form = TransactionForm(request.POST)
+        form = DebitTransactionForm(request.POST)
         if form.is_valid():
             transaction = form.save(commit=False)
             transaction.account = account
+            
+            dest_acc_no = transaction.destination_account_number
+            try:
+                dest_account = Account.objects.get(account_number=dest_acc_no)
+            except Account.DoesNotExist:
+                messages.error(request, "Destination account does not exist.")
+                return render(request, "transactions/transaction_create.html", {"form": form})
+                
+            if dest_account == account:
+                messages.error(request, "You cannot transfer to your own account.")
+                return render(request, "transactions/transaction_create.html", {"form": form})
+
+            if account.balance < transaction.amount:
+                messages.error(request, "Insufficient balance for transfer.")
+                return render(request, "transactions/transaction_create.html", {"form": form})
+            
+            account.balance -= transaction.amount
+            dest_account.balance += transaction.amount
+            account.save()
+            dest_account.save()
+                
             transaction.save()
             
-            if transaction.transaction_type == "debit":
-                if check_transaction_velocity(account.id):
-                    FraudFlag.objects.create(
-                        transaction=transaction,
-                        reason="Velocity check failed (too many debits in 1 min)",
-                        severity="high"
-                    )
-                    transaction.status = "fraud_blocked"
-                    transaction.save(update_fields=["status"])
-                    account.balance = bal
-                    account.save()
+            if check_transaction_velocity(account.id):
+                FraudFlag.objects.create(
+                    transaction=transaction,
+                    reason="Velocity check failed (too many debits in 1 min)",
+                    severity="high"
+                )
+                transaction.status = "fraud_blocked"
+                transaction.save(update_fields=["status"])
+                account.balance = bal
+                account.save()
+                dest_account.balance -= transaction.amount
+                dest_account.save()
 
-                    log_event(
-                        event_type="velocity_check",
-                        user_id=request.user.id,
-                        extra={"reason": "Too many debits in 1 minute"}
-                    )
+                log_event(
+                    event_type="velocity_check",
+                    user_id=request.user.id,
+                    extra={"reason": "Too many debits in 1 minute"}
+                )
 
-                    messages.error(request, "Transaction blocked due to velocity fraud rule.")
-                    return redirect("transaction_list")
+                messages.error(request, "Transaction blocked due to velocity fraud rule.")
+                return render(request, "transactions/transaction_create.html", {"form": form})
             
             if transaction.amount > 100000:
                 FraudFlag.objects.create(
@@ -105,8 +127,11 @@ def transaction_create(request):
                 transaction.save(update_fields=["status"])
                 account.balance = bal
                 account.save()
+                dest_account.balance -= transaction.amount
+                dest_account.save()
+                
                 messages.error(request, "Transaction blocked due to fraud suspicion.")
-                return redirect("transaction_list")
+                return render(request, "transactions/transaction_create.html", {"form": form})
 
             if account.balance < 0:
                 FraudFlag.objects.create(
@@ -118,12 +143,15 @@ def transaction_create(request):
                 transaction.save(update_fields=["status"])
                 account.balance = bal
                 account.save()
+                dest_account.balance -= transaction.amount
+                dest_account.save()
+                
                 messages.error(request, "Transaction blocked due to insufficient balance.")
-                return redirect("transaction_list")
+                return render(request, "transactions/transaction_create.html", {"form": form})
 
             messages.success(request, "Transaction completed successfully.")
             return redirect("transaction_list")
     else:
-        form = TransactionForm()
+        form = DebitTransactionForm()
     return render(request, "transactions/transaction_create.html", {"form": form})
 
