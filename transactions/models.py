@@ -32,6 +32,7 @@ class DebitTransaction(models.Model):
         ("at_support", "At Support"),
     ]
     status = models.CharField(max_length=20,choices=STATUS_CHOICES,default="completed")
+    is_reversed = models.BooleanField(default=False)
     
     @property
     def transaction_type(self):
@@ -70,6 +71,7 @@ class CreditTransaction(models.Model):
         ("at_support", "At Support"),
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="completed")
+    is_reversed = models.BooleanField(default=False)
     
     @property
     def transaction_type(self):
@@ -89,3 +91,16 @@ class ManualDebitTransaction(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, default="completed")
     is_global = models.BooleanField(default=False)
+    is_reversed = models.BooleanField(default=False)
+
+class ReversalTransaction(models.Model):
+    debit_transaction = models.ForeignKey(DebitTransaction, on_delete=models.CASCADE, null=True, blank=True)
+    credit_transaction = models.ForeignKey(CreditTransaction, on_delete=models.CASCADE, null=True, blank=True)
+    manual_debit_transaction = models.ForeignKey(ManualDebitTransaction, on_delete=models.CASCADE, null=True, blank=True)
+
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    reason = models.TextField()
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, default="completed")

@@ -1,5 +1,5 @@
 from django import forms
-from .models import DebitTransaction, CreditRequest, ManualDebitTransaction
+from .models import DebitTransaction, CreditRequest, ManualDebitTransaction, ReversalTransaction
 
 class DebitTransactionForm(forms.ModelForm):
     class Meta:
@@ -61,3 +61,17 @@ class ManualDebitForm(forms.ModelForm):
     class Meta:
         model = ManualDebitTransaction
         fields = ["amount", "reason","is_global"]
+        
+
+class ReversalForm(forms.ModelForm):
+    class Meta:
+        model = ReversalTransaction
+        fields = ["reason"]
+
+class TransactionSearchForm(forms.Form):
+    account_number = forms.CharField(required=False, label="Account No")
+    transaction_id = forms.IntegerField(required=False, label="Transaction ID")
+    transaction_type = forms.ChoiceField(
+        choices=[("debit", "Debit"), ("credit", "Credit"), ("manual", "Manual Debit")],
+        required=False
+    )

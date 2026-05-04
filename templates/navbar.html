@@ -28,6 +28,7 @@
               <li class="nav-item"><a class="nav-link" href="{% url 'fraud_stats_ui' %}">Fraud Stats</a></li>
               <li class="nav-item"><a class="nav-link" href="{% url 'accounts_list' %}">Manual Debit</a></li>
               <li class="nav-item"><a class="nav-link" href="{% url 'global_debit' %}">Global Debit</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'all_transactions_list' %}">Reverse Transaction</a></li>
               <li class="nav-item"><a class="nav-link" href="{% url 'schema-swagger-ui' %}" target="_blank">API</a></li>
           
           {% elif user.role == "support" %}

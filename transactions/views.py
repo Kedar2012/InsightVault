@@ -1,22 +1,28 @@
 from decimal import Decimal
 
+from django.http import Http404
 from django.shortcuts import get_object_or_404, render
 
 from fraudlog.mongo_client import log_event
 from transactions.utils import check_transaction_velocity
-from .models import Account, DebitTransaction, CreditRequest, CreditTransaction, ManualDebitTransaction
-from .serializers import AccountSerializer, DebitTransactionSerializer, CreditRequestSerializer, CreditTransactionSerializer, ManualDebitTransactionSerializer
+from .models import Account, DebitTransaction, CreditRequest, CreditTransaction, ManualDebitTransaction, ReversalTransaction
+from .serializers import (AccountSerializer, DebitTransactionSerializer, CreditRequestSerializer, 
+                          CreditTransactionSerializer, ManualDebitTransactionSerializer, ReversalTransactionSerializer)
 from rest_framework.exceptions import PermissionDenied
 from rest_framework import viewsets
 from .permissions import IsEndUser, IsSupportOrAnalyst, IsAnalyst, IsSupport
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
-from .forms import DebitTransactionForm, CreditRequestForm, SupportCreditExecutionForm, SupportDebitExecutionForm, ManualDebitForm
+from .forms import (DebitTransactionForm, CreditRequestForm, SupportCreditExecutionForm, SupportDebitExecutionForm, 
+                    ManualDebitForm, ReversalForm, TransactionSearchForm)
 from fraudlog.models import FraudFlag
 from django.contrib import messages
 from functools import wraps
 from django.db.models import Q
+from rest_framework import serializers
+
+
 
 def role_required(allowed_roles):
     def decorator(view_func):
@@ -451,3 +457,146 @@ def global_debit(request):
         return redirect("accounts_list")
 
     return render(request, "transactions/global_debit.html")
+
+
+@login_required
+@role_required(["analyst", "admin"])
+def all_transactions_list(request):
+    form = TransactionSearchForm(request.GET or None)
+
+    transactions = list(DebitTransaction.objects.all()) \
+                + list(CreditTransaction.objects.all()) \
+                + list(ManualDebitTransaction.objects.all())
+
+    if form.is_valid():
+        account_number = form.cleaned_data.get("account_number")
+        transaction_id = form.cleaned_data.get("transaction_id")
+        tx_type = form.cleaned_data.get("transaction_type")
+
+        if tx_type and transaction_id:
+            if tx_type == "debit":
+                transactions = DebitTransaction.objects.filter(pk=transaction_id)
+            elif tx_type == "credit":
+                transactions = CreditTransaction.objects.filter(pk=transaction_id)
+            elif tx_type == "manual":
+                transactions = ManualDebitTransaction.objects.filter(pk=transaction_id)
+        elif account_number:
+            transactions = list(DebitTransaction.objects.filter(source_account__account_number=account_number)) \
+                        + list(CreditTransaction.objects.filter(account__account_number=account_number)) \
+                        + list(ManualDebitTransaction.objects.filter(account__account_number=account_number))
+
+    return render(request, "transactions/all_transactions_list.html", {
+        "form": form,
+        "transactions": transactions
+    })
+
+
+@login_required
+@role_required(["analyst", "admin"])
+def reverse_transaction(request, tx_type, tx_id):
+    if tx_type == "debit":
+        original_tx = get_object_or_404(DebitTransaction, pk=tx_id)
+        account = original_tx.source_account
+    elif tx_type == "credit":
+        original_tx = get_object_or_404(CreditTransaction, pk=tx_id)
+        account = original_tx.account
+    elif tx_type == "manual":
+        original_tx = get_object_or_404(ManualDebitTransaction, pk=tx_id)
+        account = original_tx.account
+    else:
+        raise Http404("Invalid transaction type")
+
+    if original_tx.is_reversed:
+        messages.error(request, "This transaction has already been reversed.")
+        return redirect("all_transactions_list")
+
+    if request.method == "POST":
+        form = ReversalForm(request.POST)
+        if form.is_valid():
+            reason = form.cleaned_data["reason"]
+
+            if tx_type in ["debit", "manual"]:
+                account.balance += original_tx.amount
+            elif tx_type == "credit":
+                account.balance -= original_tx.amount
+            account.save()
+
+            original_tx.is_reversed = True
+            original_tx.save()
+
+            ReversalTransaction.objects.create(
+                debit_transaction=original_tx if tx_type == "debit" else None,
+                credit_transaction=original_tx if tx_type == "credit" else None,
+                manual_debit_transaction=original_tx if tx_type == "manual" else None,
+                account=account,
+                amount=original_tx.amount,
+                reason=reason,
+                created_by=request.user
+            )
+
+            if tx_type in ["debit", "manual"]:
+                DebitTransaction.objects.create(
+                    account=account,
+                    destination_account_number=None,
+                    amount=original_tx.amount,
+                    description=f"Reversal of Transaction #{original_tx.id} – {reason}",
+                    status="completed",
+                    is_reversed=False
+                )
+            elif tx_type == "credit":
+                CreditTransaction.objects.create(
+                    account=account,
+                    amount=original_tx.amount,
+                    deposit_reference=f"Reversal of Transaction #{original_tx.id} – {reason}",
+                    status="completed",
+                    is_reversed=False
+                )
+
+            messages.success(request, "Transaction reversed successfully.")
+            return redirect("all_transactions_list")
+    else:
+        form = ReversalForm()
+
+    return render(request, "transactions/reverse_transaction.html", {
+        "form": form,
+        "transaction": original_tx,
+        "tx_type": tx_type
+    })
+
+
+class ReversalTransactionViewSet(viewsets.ModelViewSet):
+    queryset = ReversalTransaction.objects.all().order_by("-created_at")
+    serializer_class = ReversalTransactionSerializer
+    permission_classes = [IsAnalyst]
+
+    def perform_create(self, serializer):
+        tx_type = self.request.data.get("tx_type")
+        tx_id = self.request.data.get("tx_id")
+
+        if tx_type == "debit":
+            original_tx = get_object_or_404(DebitTransaction, pk=tx_id)
+            account = original_tx.source_account
+            account.balance += original_tx.amount
+        elif tx_type == "credit":
+            original_tx = get_object_or_404(CreditTransaction, pk=tx_id)
+            account = original_tx.account
+            account.balance -= original_tx.amount
+        elif tx_type == "manual":
+            original_tx = get_object_or_404(ManualDebitTransaction, pk=tx_id)
+            account = original_tx.account
+            account.balance += original_tx.amount
+        else:
+            raise serializers.ValidationError("Invalid transaction type")
+
+        account.save()
+
+        serializer.save(
+            account=account,
+            amount=original_tx.amount,
+            created_by=self.request.user,
+            debit_transaction=original_tx if tx_type == "debit" else None,
+            credit_transaction=original_tx if tx_type == "credit" else None,
+            manual_debit_transaction=original_tx if tx_type == "manual" else None,
+        )
+
+

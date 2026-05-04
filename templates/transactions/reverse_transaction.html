@@ -1,0 +1,28 @@
+{% extends "index.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Reverse {{ tx_type|title }} Transaction #{{ transaction.id }}</h2>
+  <p>Amount: {{ transaction.amount }}</p>
+  <p>Account: {{ transaction.account.account_number }}</p>
+
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+  {% if transaction.is_reversed %}
+    <div class="alert alert-danger">This transaction has already been reversed.</div>
+  {% else %}
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="btn btn-warning">Reverse Transaction</button>
+    </form>
+  {% endif %}
+</div>
+{% endblock %}

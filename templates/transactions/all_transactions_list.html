@@ -1,0 +1,61 @@
+{% extends "index.html" %}
+{% load transaction_extras %}
+{% block content %}
+<div class="container mt-4">
+  <h2>All Transactions</h2>
+
+  <form method="get" class="mb-3">
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Search</button>
+  </form>
+
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Type</th>
+        <th>Account</th>
+        <th>Amount</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for tx in transactions %}
+      <tr>
+        <td>{{ tx.id }}</td>
+        <td>
+          {% if tx|get_type == "manual" %}
+            {% if tx.is_global %}Global{% else %}Manual{% endif %}
+          {% else %}
+            {{ tx|get_type|title }}
+          {% endif %}
+        </td>
+        <td>{{ tx.account.account_number }}</td>
+        <td>{{ tx.amount }}</td>
+        <td>
+          {% if tx.is_reversed %}
+            Already Reversed
+          {% else %}
+            <a href="{% url 'reverse_transaction' tx|get_type tx.id %}" class="btn btn-warning">
+              Reverse
+            </a>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5">No transactions found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

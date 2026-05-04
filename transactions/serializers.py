@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Account, DebitTransaction, CreditRequest, CreditTransaction, ManualDebitTransaction
+from .models import Account, DebitTransaction, CreditRequest, CreditTransaction, ManualDebitTransaction, ReversalTransaction
 
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
@@ -32,3 +32,13 @@ class ManualDebitTransactionSerializer(serializers.ModelSerializer):
         fields = ["id", "account", "amount", "reason", "created_by", "created_at", "status", "is_global"]
         read_only_fields = ["created_by", "created_at", "status"]
 
+class ReversalTransactionSerializer(serializers.ModelSerializer):
+    created_by = serializers.ReadOnlyField(source="created_by.username")
+
+    class Meta:
+        model = ReversalTransaction
+        fields = [
+            "id", "debit_transaction", "credit_transaction", "manual_debit_transaction",
+            "account", "amount", "reason", "created_by", "created_at", "status"
+        ]
+        read_only_fields = ["account", "amount", "created_by", "created_at", "status"]
