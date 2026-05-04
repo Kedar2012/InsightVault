@@ -81,7 +81,7 @@ class CreditTransaction(models.Model):
         return f"{self.account} - {self.amount} ({self.status})"
     
 class ManualDebitTransaction(models.Model):
-    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="manul_transactions")
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     reason = models.TextField()
     created_by = models.ForeignKey(
@@ -98,7 +98,7 @@ class ReversalTransaction(models.Model):
     credit_transaction = models.ForeignKey(CreditTransaction, on_delete=models.CASCADE, null=True, blank=True)
     manual_debit_transaction = models.ForeignKey(ManualDebitTransaction, on_delete=models.CASCADE, null=True, blank=True)
 
-    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="reverse_transactions")
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     reason = models.TextField()
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

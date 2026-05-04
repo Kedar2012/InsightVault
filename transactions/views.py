@@ -10,7 +10,7 @@ from .serializers import (AccountSerializer, DebitTransactionSerializer, CreditR
                           CreditTransactionSerializer, ManualDebitTransactionSerializer, ReversalTransactionSerializer)
 from rest_framework.exceptions import PermissionDenied
 from rest_framework import viewsets
-from .permissions import IsEndUser, IsSupportOrAnalyst, IsAnalyst, IsSupport
+from .permissions import IsEndUser, IsSupportOrAnalyst, IsAnalyst, IsSupport, IsAdminOrAnalyst
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
@@ -91,10 +91,14 @@ def transaction_list(request):
 
     debit_transactions = account.debit_transactions.filter(status="completed")
     credit_transactions = account.credit_transactions.filter(status__in=["completed", "rejected"])
-
+    manual_transactions = account.manul_transactions.filter(status="completed")
+    reverse_transactions = account.reverse_transactions.filter(status="completed")
+    
     transactions = list(debit_transactions) + list(credit_transactions)
     transactions.sort(key=lambda t: t.timestamp, reverse=True)
-
+    
+    transactions += list(manual_transactions) + list(reverse_transactions)
+    
     return render(
         request,
         "transactions/transaction_list.html",
@@ -392,7 +396,7 @@ def accounts_list(request):
 class ManualDebitTransactionViewSet(viewsets.ModelViewSet):
     queryset = ManualDebitTransaction.objects.all().order_by("-created_at")
     serializer_class = ManualDebitTransactionSerializer
-    permission_classes = [IsAnalyst]
+    permission_classes = [IsAdminOrAnalyst]
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
@@ -573,7 +577,7 @@ def reverse_transaction(request, tx_type, tx_id):
 class ReversalTransactionViewSet(viewsets.ModelViewSet):
     queryset = ReversalTransaction.objects.all().order_by("-created_at")
     serializer_class = ReversalTransactionSerializer
-    permission_classes = [IsAnalyst]
+    permission_classes = [IsAdminOrAnalyst]
 
     def perform_create(self, serializer):
         tx_type = self.request.data.get("tx_type")

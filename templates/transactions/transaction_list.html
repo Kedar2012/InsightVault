@@ -27,18 +27,35 @@
     <tbody>
       {% for tx in transactions %}
       <tr>
-        <td>{{ tx.transaction_type }}</td>
+
+        {% if tx.transaction_type%}
+          <td>{{ tx.transaction_type }}</td>
+        {% else %}
+          <td>{{ 'Manual/Global' }}</td>
+        {% endif %}
+
         <td>{{ tx.account }}</td>
         <td>{{ tx.amount }}</td>
         <td>
           {% if tx.transaction_type == "Debit" %}
             {{ tx.destination_account_number }}
-          {% else %}
+
+          {% elif tx.transaction_type == "Credit" %}
             {{ tx.deposit_reference }}
+
+          {% else %}
+            {{ 'Manual/Global'}}
+
           {% endif %}
         </td>
         <td>{{ tx.status }}</td>
-        <td>{{ tx.timestamp }}</td>
+
+        {% if tx.timestamp %}
+          <td>{{ tx.timestamp }}</td>
+        {% else %}
+          <td>{{ tx.created_at }}</td>
+        {% endif %}
+
       </tr>
       {% empty %}
       <tr>

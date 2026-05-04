@@ -31,3 +31,14 @@ class IsSupportOrAnalyst(BasePermission):
             and not request.user.is_staff
             and getattr(request.user, "role", None) in ["support", "analyst"]
         )
+
+class IsAdminOrAnalyst(BasePermission):
+    def has_permission(self, request, view):
+        return (
+            request.user.is_authenticated
+            and (
+                request.user.is_staff
+                or request.user.is_superuser
+                or getattr(request.user, "role", None) == "analyst"
+            )
+        )
