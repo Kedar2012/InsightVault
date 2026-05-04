@@ -39,6 +39,9 @@ class AccountViewSet(viewsets.ModelViewSet):
     permission_classes = [IsEndUser]
     
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Account.objects.none()
+        
         user = self.request.user
         return Account.objects.filter(user=user)        
 
@@ -52,6 +55,9 @@ class TransactionViewSet(viewsets.ModelViewSet):
     permission_classes = [IsEndUser]
     
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Account.objects.none()
+        
         user = self.request.user
         return DebitTransaction.objects.filter(account__user=user)
 

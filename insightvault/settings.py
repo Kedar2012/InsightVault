@@ -130,7 +130,7 @@ USE_TZ = True
 
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
-
+LOGIN_URL = '/api/accounts/login/'
 LOGIN_REDIRECT_URL = '/'
 
 CACHES = {
