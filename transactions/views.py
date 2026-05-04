@@ -1,19 +1,22 @@
+from decimal import Decimal
+
 from django.shortcuts import get_object_or_404, render
 
 from fraudlog.mongo_client import log_event
 from transactions.utils import check_transaction_velocity
-from .models import Account, DebitTransaction, CreditRequest, CreditTransaction
-from .serializers import AccountSerializer, DebitTransactionSerializer, CreditRequestSerializer, CreditTransactionSerializer
+from .models import Account, DebitTransaction, CreditRequest, CreditTransaction, ManualDebitTransaction
+from .serializers import AccountSerializer, DebitTransactionSerializer, CreditRequestSerializer, CreditTransactionSerializer, ManualDebitTransactionSerializer
 from rest_framework.exceptions import PermissionDenied
 from rest_framework import viewsets
-from .permissions import IsEndUser, IsSupportOrAnalyst
+from .permissions import IsEndUser, IsSupportOrAnalyst, IsAnalyst, IsSupport
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
-from .forms import DebitTransactionForm, CreditRequestForm, SupportCreditExecutionForm, SupportDebitExecutionForm
+from .forms import DebitTransactionForm, CreditRequestForm, SupportCreditExecutionForm, SupportDebitExecutionForm, ManualDebitForm
 from fraudlog.models import FraudFlag
 from django.contrib import messages
 from functools import wraps
+from django.db.models import Q
 
 def role_required(allowed_roles):
     def decorator(view_func):
@@ -362,3 +365,89 @@ def support_execute_credit(request, pk):
         form = SupportCreditExecutionForm(instance=credit_request)
 
     return render(request, "transactions/support_execute_credit.html", {"form": form, "credit_request": credit_request})
+
+@login_required
+@role_required(["analyst", "admin"])
+def accounts_list(request):
+    query = request.GET.get("q")
+    if query:
+        accounts = Account.objects.filter(Q(account_number__icontains=query))
+    else:
+        accounts = Account.objects.all()
+
+    return render(request, "transactions/accounts_list.html", {"accounts": accounts, "query": query})
+
+class ManualDebitTransactionViewSet(viewsets.ModelViewSet):
+    queryset = ManualDebitTransaction.objects.all().order_by("-created_at")
+    serializer_class = ManualDebitTransactionSerializer
+    permission_classes = [IsAnalyst]
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+        
+@login_required
+@role_required(["analyst", "admin"])
+def manual_debit(request, account_id):
+    account = get_object_or_404(Account, pk=account_id)
+    if request.method == "POST":
+        form = ManualDebitForm(request.POST)
+        if form.is_valid():
+            debit = form.save(commit=False)
+            debit.account = account
+            debit.created_by = request.user
+
+            account.balance -= debit.amount
+            account.save()
+
+            debit.save()
+            
+            DebitTransaction.objects.create(
+                account=account,
+                destination_account_number=None,
+                amount=debit.amount,
+                description=f"Manual debit: {debit.reason}",
+                status="completed"
+            )
+            
+            messages.success(request, "Amount deducted successfully.")
+            return redirect("accounts_list")
+    else:
+        form = ManualDebitForm()
+
+    return render(request, "transactions/manual_debit.html", {
+        "form": form,
+        "account": account
+    })
+
+@login_required
+@role_required(["analyst", "admin"])
+def global_debit(request):
+    if request.method == "POST":
+        amount = Decimal(request.POST.get("amount"))
+        reason = request.POST.get("reason")
+
+        accounts = Account.objects.all()
+        for account in accounts:
+            account.balance -= amount
+            account.save()
+
+            ManualDebitTransaction.objects.create(
+                account=account,
+                amount=amount,
+                reason=reason,
+                created_by=request.user,
+                is_global=True
+            )
+            
+            DebitTransaction.objects.create(
+                account=account,
+                destination_account_number=None,
+                amount=amount,
+                description=f"Global debit: {reason}",
+                status="completed"
+            )
+
+        messages.success(request, f"Global debit of {amount} applied to all accounts.")
+        return redirect("accounts_list")
+
+    return render(request, "transactions/global_debit.html")

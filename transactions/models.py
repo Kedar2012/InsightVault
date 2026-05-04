@@ -78,3 +78,14 @@ class CreditTransaction(models.Model):
     def __str__(self):
         return f"{self.account} - {self.amount} ({self.status})"
     
+class ManualDebitTransaction(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    reason = models.TextField()
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, default="completed")
+    is_global = models.BooleanField(default=False)

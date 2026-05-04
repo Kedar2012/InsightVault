@@ -1,5 +1,5 @@
 from django import forms
-from .models import DebitTransaction, CreditRequest
+from .models import DebitTransaction, CreditRequest, ManualDebitTransaction
 
 class DebitTransactionForm(forms.ModelForm):
     class Meta:
@@ -57,3 +57,7 @@ class SupportCreditExecutionForm(forms.ModelForm):
             raise forms.ValidationError("Deposit reference is required.")
         return cleaned_data
     
+class ManualDebitForm(forms.ModelForm):
+    class Meta:
+        model = ManualDebitTransaction
+        fields = ["amount", "reason","is_global"]

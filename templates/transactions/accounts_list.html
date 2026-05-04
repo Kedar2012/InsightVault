@@ -1,0 +1,44 @@
+{% extends "index.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h2>All Accounts</h2>
+
+  <form method="get" class="mb-3">
+    <input type="text" name="q" value="{{ query }}" placeholder="Search by account number" class="form-control">
+    <button type="submit" class="btn btn-primary mt-2">Search</button>
+  </form>
+
+  {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+  {% endif %}
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Account No</th>
+        <th>User</th>
+        <th>Balance</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for account in accounts %}
+      <tr>
+        <td>{{ account.account_number }}</td>
+        <td>{{ account.user.username }}</td>
+        <td>{{ account.balance }}</td>
+        <td>
+          <a href="{% url 'manual_debit' account.id %}" class="btn btn-danger">Manual Debit</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Account, DebitTransaction, CreditRequest, CreditTransaction
+from .models import Account, DebitTransaction, CreditRequest, CreditTransaction, ManualDebitTransaction
 
 # Register your models here.
 @admin.register(Account)
@@ -17,4 +17,8 @@ class CreditRequestAdmin(admin.ModelAdmin):
 @admin.register(CreditTransaction)
 class CreditTransactionAdmin(admin.ModelAdmin):
     list_display = ("account", "amount", "deposit_reference", "status", "timestamp")
+
+@admin.register(ManualDebitTransaction)
+class ManualDebitTransactionAdmin(admin.ModelAdmin):
+    list_display = ("account", "amount", "reason", "created_by", "status", "is_global")
 
