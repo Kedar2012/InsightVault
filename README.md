@@ -13,7 +13,7 @@ It integrates SQL and NoSQL databases, scalable services, advanced analytics, an
 
 # 🏗️ Tech Stack
 - Frontend/Admin: Django (role‑based dashboards, admin, authentication)
-- APIs: Django REST Framework (REST endpoints, JWT/OAuth2 authentication)
+- APIs: Django REST Framework (REST endpoints, JWT authentication)
 - Databases:
 - Postgres → SQL, transactional data
 - MongoDB → NoSQL, logs, fraud alerts
@@ -25,32 +25,18 @@ It integrates SQL and NoSQL databases, scalable services, advanced analytics, an
 
 # 🔄 Architecture Flow
 - User Layer → Customers, Admins, Chatbot assistant
-- Application Layer → Django dashboards, Django REST Framework APIs, Fraud Detection Service (Celery workers)
+- Application Layer → Django dashboards, Django REST Framework APIs, Fraud Detection Service - Reddis
 - Data Layer → Postgres (transactions), Redis (real‑time cache), MongoDB (logs/alerts)
 - Analytics Layer → Spark, Pandas/Numpy, Power BI dashboards
 - Infrastructure Layer → Docker, Kubernetes, AWS
   
 # 🚀 Features
 - Transaction Management → Secure creation, validation, and storage of financial transactions
-- Fraud Detection Engine → Real‑time anomaly detection powered by Spark + Redis + Celery
+- Fraud Detection Engine → Real‑time anomaly detection powered by Spark + Redis
 - Multi‑Database Integration → SQL + NoSQL hybrid for structured and unstructured data
 - Analytics Dashboards → Power BI visualizations for fraud rates, transaction volumes, and risk profiles
 - Scalable Deployment → Dockerized services orchestrated with Kubernetes, hosted on AWS (GCP optional)
 - Observability → End‑to‑end monitoring and logging with Prometheus, Grafana optional, ELK optional
-
-
-# 📂 Project Structure
-```
-insightvault/
-├── django_app/               # Django project (admin, dashboards, auth)
-├── drf_api/                  # DRF-based API endpoints
-├── fraud_detection/          # Celery workers, anomaly detection services
-├── analytics/                # Spark jobs, Pandas/Numpy scripts
-├── chatbot/                  # Rasa/Hugging Face chatbot logic
-├── docker/                   # Dockerfiles and Compose setup
-├── k8s/                      # Kubernetes manifests
-├── tests/                    # Pytest test suites (Pylint optional)
-└── docs/                     # Swagger/OpenAPI + project documentation
 
 ```
 
