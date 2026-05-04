@@ -38,8 +38,6 @@ It integrates SQL and NoSQL databases, scalable services, advanced analytics, an
 - Scalable Deployment → Dockerized services orchestrated with Kubernetes, hosted on AWS (GCP optional)
 - Observability → End‑to‑end monitoring and logging with Prometheus, Grafana optional, ELK optional
 
-```
-
 ## 🧪 Testing & CI/CD
 - Pytest → Unit & integration tests
 - Pylint (optional) → Code quality enforcement
