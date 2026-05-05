@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'accounts',
     'rest_framework',
     'drf_yasg',
+    'analytics',
 ]
 
 MIDDLEWARE = [

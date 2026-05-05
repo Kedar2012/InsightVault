@@ -7,7 +7,7 @@ It integrates SQL and NoSQL databases, scalable services, advanced analytics, an
 # 🎯 Objectives
 - Provide a secure transaction system with role‑based dashboards.
 - Detect and flag fraudulent transactions using statistical and distributed analytics.
-- Deliver real‑time performance with caching and anomaly detection.
+- Deliver real‑time performance with caching.
 - Scale seamlessly with Docker
 - Ensure code quality with pytest in CI/CD pipelines (Pylint optional).
 
@@ -17,24 +17,21 @@ It integrates SQL and NoSQL databases, scalable services, advanced analytics, an
 - Databases:
 - Postgres → SQL, transactional data
 - MongoDB → NoSQL, logs, fraud alerts
-- Redis → NoSQL, caching, real‑time flags
-- Analytics: Pandas, Numpy, Spark
-- Testing & Quality: Pytest (Pylint optional)
+- Redis → NoSQL, caching, real‑time flags, celery.
+- Testing & Quality: Pytest (Pylint optional), Celery-tasks.
 - Infrastructure: Docker, GitHub/DockerHub
 - Cloud: AWS (primary deployment)
 
 # 🔄 Architecture Flow
 - User Layer → Customers, Admins, Chatbot assistant
 - Application Layer → Django dashboards, Django REST Framework APIs, Fraud Detection Service - Reddis
-- Data Layer → Postgres (transactions), Redis (real‑time cache), MongoDB (logs/alerts)
-- Analytics Layer → Spark, Pandas/Numpy, Power BI dashboards
+- Data Layer → Postgres (transactions), Redis (real‑time cache), MongoDB (logs/alerts), Celery(tasks).
 - Infrastructure Layer → Docker, Kubernetes, AWS
   
 # 🚀 Features
 - Transaction Management → Secure creation, validation, and storage of financial transactions
-- Fraud Detection Engine → Real‑time anomaly detection powered by Spark + Redis
+- Fraud Detection Engine → Real‑time anomaly detection powered by Redis
 - Multi‑Database Integration → SQL + NoSQL hybrid for structured and unstructured data
-- Analytics Dashboards → Power BI visualizations for fraud rates, transaction volumes, and risk profiles
 - Scalable Deployment → Dockerized services orchestrated with Kubernetes, hosted on AWS (GCP optional)
 - Observability → End‑to‑end monitoring and logging with Prometheus, Grafana optional, ELK optional
 
@@ -47,12 +44,6 @@ It integrates SQL and NoSQL databases, scalable services, advanced analytics, an
 - Local Dev → Docker Compose for all services
 - Production → Kubernetes (EKS/GKE), AWS RDS (Postgres), ElastiCache (Redis), DocumentDB/MongoDB Atlas
 - CI/CD → GitHub Actions → DockerHub/ECR → Kubernetes cluster
-
-# 📖 Future Enhancements
-- Machine learning models for fraud detection (scikit‑learn, TensorFlow)
-- Advanced chatbot flows (Rasa, Botpress)
-- Infrastructure as Code (Terraform)
-- Multi‑cloud deployment (AWS + GCP optional)
 
 # 👨‍💻 Author
 
