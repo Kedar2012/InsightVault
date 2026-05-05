@@ -13,7 +13,7 @@ jobs:
       redis:
         image: redis:7
         ports:
-          - 6380:6379   # ✅ map Redis default port 6379 to 6380 (your app expects 6380)
+          - 6379:6379
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
@@ -23,10 +23,10 @@ jobs:
       DJANGO_SETTINGS_MODULE: insightvault.settings
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       CI: true
-      SECRET_KEY: "dummy-secret-for-ci"   # ✅ injected so Django/JWT don’t crash
+      SECRET_KEY: "dummy-secret-for-ci"
       REDIS_HOST: "localhost"
-      REDIS_PORT: "6380"
-      DATABASE_URL: "sqlite:///db.sqlite3"   # ✅ simple DB for CI tests
+      REDIS_PORT: "6379"
+      DATABASE_URL: "sqlite:///db.sqlite3"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -34,7 +34,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"   # ✅ Django 6.x requires Python >= 3.12
+          python-version: "3.12"
 
       - name: Install dependencies
         run: |
