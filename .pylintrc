@@ -1,0 +1,7 @@
+[MASTER]
+django-settings-module = insightvault.settings
+ignore=venv,migrations
+load-plugins=pylint_django
+
+[MESSAGES CONTROL]
+disable=C0114,C0115,C0116,C0103  # disable missing docstring warnings
