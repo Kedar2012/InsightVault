@@ -13,6 +13,10 @@ from .forms import FraudResolveForm
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+import csv
+from rest_framework.views import APIView
+from django.http import HttpResponse
+
 
 def role_required(allowed_roles):
     def decorator(view_func):
@@ -181,7 +185,6 @@ def resolve_fraud_flag(request, pk):
             flag.resolved_by = request.user
             flag.save()
 
-            # Move linked object to support
             if flag.transaction:
                 flag.transaction.status = "at_support"
                 flag.transaction.save()
@@ -197,3 +200,22 @@ def resolve_fraud_flag(request, pk):
     return render(request, "fraudlog/resolve_flag.html", {"form": form, "flag": flag})
 
 
+class ExportFraudLogsAPIView(APIView):
+    def get(self, request):
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = 'attachment; filename="fraud_logs.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow(["transaction", "credit_request", "reason", "flagged_at", "resolved", "resolved_reason", "resolved_by"])
+        for log in FraudFlag.objects.all():
+            writer.writerow([
+                log.transaction,
+                log.credit_request,
+                log.reason,
+                log.flagged_at,
+                log.resolved,
+                log.resolved_reason,
+                log.resolved_by,
+            ])
+        
+        return response
