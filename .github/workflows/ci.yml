@@ -9,6 +9,9 @@ on:
 jobs:
   test-lint:
     runs-on: ubuntu-latest
+    env:
+      DJANGO_SETTINGS_MODULE: insightvault.settings
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -25,11 +28,7 @@ jobs:
           pip install pytest pytest-django pylint pylint-django
 
       - name: Run tests
-        env:
-          DJANGO_SETTINGS_MODULE: insightvault.settings
         run: pytest --disable-warnings -q
 
       - name: Lint code
-        env:
-          DJANGO_SETTINGS_MODULE: insightvault.settings
         run: pylint insightvault
