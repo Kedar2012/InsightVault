@@ -19,6 +19,21 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: testdb
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U testuser -d testdb"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     env:
       DJANGO_SETTINGS_MODULE: insightvault.settings
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -26,6 +41,12 @@ jobs:
       SECRET_KEY: "dummy-secret-for-ci"
       REDIS_HOST: "localhost"
       REDIS_PORT: "6379"
+      DB_NAME: "testdb"
+      DB_USER: "testuser"
+      DB_PASSWORD: "testpass"
+      DB_HOST: "localhost"
+      DB_PORT: "5432"
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
