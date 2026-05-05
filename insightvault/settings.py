@@ -75,7 +75,7 @@ DATABASES = {
 MONGO_DB = {
     "NAME": os.getenv("MDB_NAME", "testmongo"),
     "HOST": os.getenv("MDB_HOST", "localhost"),
-    "PORT": int(os.getenv("MDB_PORT", 27017)),
+    "PORT": int(os.getenv("MDB_PORT", "27017")),
     "USER": os.getenv("MDB_USER", "mongouser"),
     "PASSWORD": os.getenv("MDB_PASSWORD", "mongopass"),
 }
@@ -131,7 +131,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
-REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
+REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
 REDIS_DB = 0
 
 CELERY_BROKER_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
@@ -148,7 +148,10 @@ SWAGGER_SETTINGS = {
             'type': 'apiKey',
             'name': 'Authorization',
             'in': 'header',
-            'description': 'JWT Authorization header using the Bearer scheme. Example: "Bearer {token}"',
+            'description': (
+                'JWT Authorization header using the Bearer scheme. '
+                'Example: "Bearer {token}"'
+            ),
         }
     }
 }
