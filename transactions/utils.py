@@ -1,7 +1,7 @@
 import redis
 from datetime import datetime
 
-r = redis.Redis(host="localhost", port=6379, db=0)
+r = redis.Redis(host="redis", port=6379, db=0)
 
 def check_transaction_velocity(account_id, window_seconds=60, max_txns=5):
     key = f"txn_velocity:{account_id}"

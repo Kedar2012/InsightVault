@@ -64,17 +64,17 @@ DATABASES = {
     # }
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv("DB_NAME", "testdb"),
-        'USER': os.getenv("DB_USER", "testuser"),
-        'PASSWORD': os.getenv("DB_PASSWORD", "testpass"),
-        'HOST': os.getenv("DB_HOST", "localhost"),
-        'PORT': os.getenv("DB_PORT", "5432"),
+        'NAME': os.getenv("POSTGRES_DB"),
+        'USER': os.getenv("POSTGRES_USER"),
+        'PASSWORD': os.getenv("POSTGRES_PASSWORD"),
+        'HOST': os.getenv("POSTGRES_HOST", "localhost"),
+        'PORT': os.getenv("POSTGRES_PORT", "5432"),
     }
 }
 
 MONGO_DB = {
     "NAME": os.getenv("MDB_NAME", "testmongo"),
-    "HOST": os.getenv("MDB_HOST", "localhost"),
+    "HOST": os.getenv("MDB_HOST", "mongodb"),
     "PORT": int(os.getenv("MDB_PORT", "27017")),
     "USER": os.getenv("MDB_USER", "mongouser"),
     "PASSWORD": os.getenv("MDB_PASSWORD", "mongopass"),
@@ -113,7 +113,7 @@ LOGIN_REDIRECT_URL = '/'
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",
+        "LOCATION": "redis://redis:6379/1",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
@@ -130,7 +130,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
 REDIS_DB = 0
 
